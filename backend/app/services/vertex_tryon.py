@@ -76,6 +76,20 @@ def _run_virtual_tryon_vertex(
         len(garment_image_bytes),
     )
 
+    # ── CA bundle (ZScaler / corporate proxy support) ────────────────────────
+    # REQUESTS_CA_BUNDLE is set by the launch scripts when a custom cert is found.
+    ca_bundle = os.getenv("REQUESTS_CA_BUNDLE") or os.getenv("SSL_CERT_FILE") or None
+    if ca_bundle:
+        logger.info("Using custom CA bundle for Vertex requests: %s", ca_bundle)
+
+    def _http_options(**extra_headers: str) -> types.HttpOptions:
+        opts: dict = {}
+        if extra_headers:
+            opts["headers"] = extra_headers
+        if ca_bundle:
+            opts["ca_bundle_path"] = ca_bundle
+        return types.HttpOptions(**opts) if opts else None  # type: ignore[return-value]
+
     if auth_mode == "api_key":
         if not api_key:
             raise RuntimeError("VERTEX_API_KEY is required when VTO_AUTH_MODE=api_key")
@@ -84,11 +98,20 @@ def _run_virtual_tryon_vertex(
             vertexai=True,
             project=project_id,
             location=location,
-            http_options=types.HttpOptions(headers={"x-goog-api-key": api_key}),
+            http_options=types.HttpOptions(
+                headers={"x-goog-api-key": api_key},
+                **( {"ca_bundle_path": ca_bundle} if ca_bundle else {} ),
+            ),
         )
     else:
         # Default: Application Default Credentials (ADC) or GOOGLE_APPLICATION_CREDENTIALS
-        client = genai.Client(vertexai=True, project=project_id, location=location)
+        http_opts = _http_options()
+        client = genai.Client(
+            vertexai=True,
+            project=project_id,
+            location=location,
+            **({"http_options": http_opts} if http_opts else {}),
+        )
 
     logger.info("Calling Vertex AI recontext_image model=virtual-try-on-preview-08-04")
     start_time = time.monotonic()

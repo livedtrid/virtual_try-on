@@ -10,28 +10,56 @@ A proof-of-concept Virtual Try-On experience with a static React frontend and an
 
 ## Local Development
 
+### Prerequisites
+
+| Tool | macOS | Windows |
+|---|---|---|
+| Python 3.11+ | `brew install python` | [python.org](https://www.python.org/downloads/) — check **"Add to PATH"** during install |
+| Node.js 18+ | `brew install node` | [nodejs.org](https://nodejs.org/) |
+| PowerShell 7+ | — | Pre-installed on Windows 10/11; update at [github.com/PowerShell](https://github.com/PowerShell/PowerShell/releases) |
+
+> **Windows note:** The first time you run a `.ps1` script you may need to allow local scripts:
+> ```powershell
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
+
 ### One-command startup (backend + frontend)
 
+**macOS / Linux:**
 ```bash
 ./run-local.sh
 ```
 
-This script starts both services, auto-creates `backend/.venv` and `frontend/.env` when missing, and installs dependencies on first run.
+**Windows (PowerShell):**
+```powershell
+.\run-local.ps1
+```
 
-Optional custom ports:
+These scripts start both services, auto-create `backend/.venv` and `frontend/.env` when missing, and install dependencies on first run.
 
+Optional custom ports — macOS/Linux:
 ```bash
 BACKEND_PORT=8081 FRONTEND_PORT=5174 ./run-local.sh
 ```
 
+Optional custom ports — Windows:
+```powershell
+$env:BACKEND_PORT=8081; $env:FRONTEND_PORT=5174; .\run-local.ps1
+```
+
 ### One-command startup in Vertex mode
 
+**macOS / Linux:**
 ```bash
 GOOGLE_CLOUD_PROJECT=your-project-id ./run-local-vertex.sh
 ```
 
-Optional settings:
+**Windows (PowerShell):**
+```powershell
+$env:GOOGLE_CLOUD_PROJECT="your-project-id"; .\run-local-vertex.ps1
+```
 
+Optional settings — macOS/Linux:
 ```bash
 GOOGLE_CLOUD_PROJECT=your-project-id \
 GOOGLE_CLOUD_LOCATION=us-central1 \
@@ -39,26 +67,25 @@ GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/service-account.json \
 ./run-local-vertex.sh
 ```
 
-`run-local-vertex.sh` sets `VTO_USE_VERTEX=true` and then starts both services through `run-local.sh`.
+Optional settings — Windows:
+```powershell
+$env:GOOGLE_CLOUD_PROJECT="your-project-id"
+$env:GOOGLE_CLOUD_LOCATION="us-central1"
+$env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\service-account.json"
+.\run-local-vertex.ps1
+```
 
 ### One-command startup in Vertex mode with API Key
 
-If you have a GCP API key (with Vertex AI API enabled) and prefer not to use a service account:
-
+**macOS / Linux:**
 ```bash
 GOOGLE_CLOUD_PROJECT=your-project-id VERTEX_API_KEY=AIza... ./run-local-apikey.sh
 ```
 
-Optional settings:
-
-```bash
-GOOGLE_CLOUD_PROJECT=your-project-id \
-VERTEX_API_KEY=AIza... \
-GOOGLE_CLOUD_LOCATION=us-central1 \
-./run-local-apikey.sh
+**Windows (PowerShell):**
+```powershell
+$env:GOOGLE_CLOUD_PROJECT="your-project-id"; $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
 ```
-
-`run-local-apikey.sh` sets `VTO_USE_VERTEX=true` and `VTO_AUTH_MODE=api_key`, then starts both services through `run-local.sh`.
 
 ### 1) Run backend
 
@@ -117,7 +144,7 @@ The Vite base path is set in `frontend/vite.config.js` as:
 
 That matches:
 
-- `https://livedtrid.github.io/virtual_try-on/`
+- `https://livedtrid.github.io/virtual_try_on/`
 
 ## Connecting Frontend to Backend
 
@@ -144,5 +171,23 @@ Vertex mode env vars:
 - `VTO_AUTH_MODE` — `adc` (default) or `api_key`
   - `adc`: uses Application Default Credentials or `GOOGLE_APPLICATION_CREDENTIALS`
   - `api_key`: uses a plain GCP API key set in `VERTEX_API_KEY`
+
+## ZScaler / Corporate Proxy
+
+If you are behind ZScaler or another TLS-inspecting proxy the Vertex AI SDK will fail to connect because it does not trust the corporate root certificate.
+
+Both `run-local-vertex.sh` and `run-local-apikey.sh` handle this automatically on macOS: they export the system keychain (which includes the ZScaler root CA when installed via MDM) into a PEM bundle and set `REQUESTS_CA_BUNDLE`, `SSL_CERT_FILE`, and `GRPC_DEFAULT_SSL_ROOTS_FILE_PATH` before starting the backend.
+
+You will see a log line like:
+
+```
+[vertex] Exported macOS system keychain as CA bundle (includes ZScaler if installed via MDM): /tmp/vto-system-ca-bundle.pem
+```
+
+If you need to point to a specific cert file instead:
+
+```bash
+VTO_CA_BUNDLE=/path/to/zscaler-ca.pem GOOGLE_CLOUD_PROJECT=my-project ./run-local-vertex.sh
+```
 
 All Google Cloud integration stays isolated in `backend/app/services/vertex_tryon.py`.
