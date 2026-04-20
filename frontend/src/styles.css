@@ -46,6 +46,10 @@ body {
   background: #f9fafb;
 }
 
+.product-media {
+  position: relative;
+}
+
 .primary-cta,
 button {
   border: 0;
@@ -59,6 +63,14 @@ button {
 
 .primary-cta {
   margin-top: 1rem;
+}
+
+.primary-cta--overlay {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  margin-top: 0;
+  z-index: 1;
 }
 
 button:disabled {
@@ -97,6 +109,10 @@ select {
 
 .widget h2 {
   margin-top: 0;
+}
+
+.widget-card {
+  grid-column: 1 / -1;
 }
 
 .inline-note {

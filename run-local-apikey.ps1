@@ -2,9 +2,10 @@
 # Starts the Virtual Try-On stack in Vertex AI mode using a plain API key.
 #
 # Usage:
-#   $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
+#   $env:GOOGLE_CLOUD_PROJECT="my-project"; $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
 #
 # Optional:
+#   $env:GOOGLE_CLOUD_LOCATION="us-central1"
 #   $env:VTO_CA_BUNDLE="C:\path\to\zscaler-ca.pem"
 
 $ErrorActionPreference = "Stop"
@@ -18,32 +19,30 @@ if (-not (Test-Path $BaseRunner)) {
 }
 
 # -- Validate required env vars ------------------------------------------------
+if (-not $env:GOOGLE_CLOUD_PROJECT) {
+    Write-Host "[error] GOOGLE_CLOUD_PROJECT is required."
+    Write-Host '[hint]  Example: $env:GOOGLE_CLOUD_PROJECT="my-project"; $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1'
+    exit 1
+}
+
 if (-not $env:VERTEX_API_KEY) {
     Write-Host "[error] VERTEX_API_KEY is required."
-    Write-Host '[hint]  Example: $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1'
+    Write-Host '[hint]  Example: $env:GOOGLE_CLOUD_PROJECT="my-project"; $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1'
     exit 1
 }
 
 # -- Export settings -----------------------------------------------------------
 $env:VTO_USE_VERTEX        = "true"
 $env:VTO_AUTH_MODE         = "api_key"
-
-if ($env:GOOGLE_CLOUD_PROJECT) {
-    Write-Host "[apikey] Ignoring GOOGLE_CLOUD_PROJECT in API key mode."
-    Remove-Item Env:GOOGLE_CLOUD_PROJECT -ErrorAction SilentlyContinue
-}
-if ($env:GOOGLE_CLOUD_LOCATION) {
-    Write-Host "[apikey] Ignoring GOOGLE_CLOUD_LOCATION in API key mode."
-    Remove-Item Env:GOOGLE_CLOUD_LOCATION -ErrorAction SilentlyContinue
-}
-if ($env:GOOGLE_APPLICATION_CREDENTIALS) {
-    Write-Host "[apikey] Ignoring GOOGLE_APPLICATION_CREDENTIALS in API key mode."
-    Remove-Item Env:GOOGLE_APPLICATION_CREDENTIALS -ErrorAction SilentlyContinue
-}
+$env:GOOGLE_CLOUD_LOCATION = if ($env:GOOGLE_CLOUD_LOCATION) { $env:GOOGLE_CLOUD_LOCATION } else { "us-central1" }
+$env:VTO_VIRTUAL_TRY_ON_MODEL = if ($env:VTO_VIRTUAL_TRY_ON_MODEL) { $env:VTO_VIRTUAL_TRY_ON_MODEL } else { "virtual-try-on-preview-08-04" }
 
 $maskedKey = "****" + $env:VERTEX_API_KEY.Substring([Math]::Max(0, $env:VERTEX_API_KEY.Length - 4))
 
 Write-Host "[apikey] Vertex AI enabled with API key auth"
+Write-Host "[apikey] GOOGLE_CLOUD_PROJECT=$env:GOOGLE_CLOUD_PROJECT"
+Write-Host "[apikey] GOOGLE_CLOUD_LOCATION=$env:GOOGLE_CLOUD_LOCATION"
+Write-Host "[apikey] VTO_VIRTUAL_TRY_ON_MODEL=$env:VTO_VIRTUAL_TRY_ON_MODEL"
 Write-Host "[apikey] VERTEX_API_KEY=$maskedKey"
 
 # -- CA bundle (ZScaler / corporate proxy) ------------------------------------

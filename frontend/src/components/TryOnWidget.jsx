@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { runTryOn } from "../api";
 import CTAButton from "./CTAButton";
 import ImageUploader from "./ImageUploader";
-import ProductSelector, { PRODUCTS } from "./ProductSelector";
 import ResultPreview from "./ResultPreview";
 
 function buildAssetUrl(assetPath) {
@@ -15,9 +14,8 @@ function buildFileName(product) {
   return `${product.id}.${extension}`;
 }
 
-export default function TryOnWidget() {
+export default function TryOnWidget({ selectedProduct }) {
   const [personFile, setPersonFile] = useState(null);
-  const [selectedProductId, setSelectedProductId] = useState(PRODUCTS[0].id);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [resultData, setResultData] = useState(null);
@@ -34,9 +32,8 @@ export default function TryOnWidget() {
     setErrorMessage("");
 
     try {
-      const selectedProduct = PRODUCTS.find((product) => product.id === selectedProductId);
       if (!selectedProduct) {
-        throw new Error("Selected garment is no longer available.");
+        throw new Error("Try-on product is not available.");
       }
 
       const garmentResponse = await fetch(buildAssetUrl(selectedProduct.asset));
@@ -65,10 +62,9 @@ export default function TryOnWidget() {
   return (
     <div className="widget">
       <h2>Virtual Try-On Widget</h2>
-      <p className="muted inline-note">Upload a person image and pick a mock product.</p>
+      <p className="muted inline-note">Upload a person image and run try-on for {selectedProduct?.label || "the selected item"}.</p>
 
       <ImageUploader onFileChange={setPersonFile} previewUrl={previewUrl} />
-      <ProductSelector value={selectedProductId} onChange={setSelectedProductId} />
 
       <CTAButton isLoading={isLoading} isReady={canRun} hasResult={Boolean(resultData)} onClick={handleRunTryOn} />
       <ResultPreview isLoading={isLoading} errorMessage={errorMessage} resultData={resultData} />

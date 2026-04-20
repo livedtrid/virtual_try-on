@@ -32,7 +32,7 @@
 - Frontend backend URL is `VITE_API_BASE_URL` (`frontend/.env.example`, `frontend/src/api.js`).
 - Vertex mode envs:
   - ADC mode: `VTO_USE_VERTEX=true`, `GOOGLE_CLOUD_PROJECT`, optional `GOOGLE_CLOUD_LOCATION`, optional `GOOGLE_APPLICATION_CREDENTIALS`
-  - API key mode: `VTO_USE_VERTEX=true`, `VTO_AUTH_MODE=api_key`, `VERTEX_API_KEY` (do not send project/location)
+  - API key mode: `VTO_USE_VERTEX=true`, `VTO_AUTH_MODE=api_key`, `VERTEX_API_KEY`, `GOOGLE_CLOUD_PROJECT`, optional `GOOGLE_CLOUD_LOCATION`
 - Corporate TLS/proxy support uses CA bundle env vars (`REQUESTS_CA_BUNDLE`, `SSL_CERT_FILE`, `GRPC_DEFAULT_SSL_ROOTS_FILE_PATH`) propagated by vertex run scripts and consumed in `vertex_tryon.py`.
 - Keep generated `docs/assets/*` as build output from `frontend/`; edit source under `frontend/src/` and rebuild instead.
 

@@ -79,12 +79,19 @@ $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\service-account.json"
 
 **macOS / Linux:**
 ```bash
-VERTEX_API_KEY=AIza... ./run-local-apikey.sh
+GOOGLE_CLOUD_PROJECT=your-project-id VERTEX_API_KEY=AIza... ./run-local-apikey.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-$env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
+$env:GOOGLE_CLOUD_PROJECT="your-project-id"; $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
+```
+
+API key launchers default `VTO_VIRTUAL_TRY_ON_MODEL` to `virtual-try-on-preview-08-04` for compatibility.
+Override explicitly if needed:
+
+```powershell
+$env:VTO_VIRTUAL_TRY_ON_MODEL="virtual-try-on-001"
 ```
 
 ### 1) Run backend
@@ -170,7 +177,8 @@ Vertex mode env vars:
 - `VTO_USE_VERTEX=true`
 - `VTO_AUTH_MODE` — `adc` (default) or `api_key`
   - `adc`: uses Application Default Credentials or `GOOGLE_APPLICATION_CREDENTIALS`
-  - `api_key`: uses a plain GCP API key set in `VERTEX_API_KEY` and intentionally does not send project/location
+  - `api_key`: uses a plain GCP API key set in `VERTEX_API_KEY` with `GOOGLE_CLOUD_PROJECT` (and optional `GOOGLE_CLOUD_LOCATION`)
+- Optional model override: `VTO_VIRTUAL_TRY_ON_MODEL` (API-key launcher defaults to `virtual-try-on-preview-08-04`)
 
 ## ZScaler / Corporate Proxy
 

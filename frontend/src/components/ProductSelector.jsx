@@ -1,7 +1,4 @@
-const PRODUCTS = [
-  { id: "sweater", label: "Sweater", asset: "products/sweater.jpg" },
-  { id: "trousers", label: "Trousers", asset: "products/trousers.jpg" },
-];
+import { PRODUCTS } from "../products";
 
 export default function ProductSelector({ value, onChange }) {
   return (
