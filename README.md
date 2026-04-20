@@ -8,6 +8,14 @@ A proof-of-concept Virtual Try-On experience with a static React frontend and an
 - `backend/` - FastAPI API with `/health` and `/tryon`
 - `backend/app/services/vertex_tryon.py` - isolated service seam for Vertex AI logic
 
+## Current Product UX
+
+- Product cards are rendered from `frontend/src/products.js`.
+- The try-on panel is hidden by default and only opens after clicking `Experimentar agora` on a product image.
+- The CTA is shown as an overlay in the bottom-right of each try-on-enabled product image (`frontend/src/App.jsx`).
+- The widget no longer uses a product dropdown; the selected card drives garment selection.
+- In the widget, users can upload an image or capture one from camera (`frontend/src/components/ImageUploader.jsx`).
+
 ## Local Development
 
 ### Prerequisites
@@ -79,19 +87,21 @@ $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\service-account.json"
 
 **macOS / Linux:**
 ```bash
-GOOGLE_CLOUD_PROJECT=your-project-id VERTEX_API_KEY=AIza... ./run-local-apikey.sh
+VERTEX_API_KEY=AIza... ./run-local-apikey.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-$env:GOOGLE_CLOUD_PROJECT="your-project-id"; $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
+$env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
 ```
 
-API key launchers default `VTO_VIRTUAL_TRY_ON_MODEL` to `virtual-try-on-preview-08-04` for compatibility.
-Override explicitly if needed:
+In API-key mode, the launchers clear `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`, and `GOOGLE_APPLICATION_CREDENTIALS` to avoid conflicting auth paths.
+
+Optional model overrides:
 
 ```powershell
 $env:VTO_VIRTUAL_TRY_ON_MODEL="virtual-try-on-001"
+$env:VTO_IMAGE_GENERATION_MODEL="imagen-4.0-generate-001"
 ```
 
 ### 1) Run backend
@@ -177,8 +187,11 @@ Vertex mode env vars:
 - `VTO_USE_VERTEX=true`
 - `VTO_AUTH_MODE` — `adc` (default) or `api_key`
   - `adc`: uses Application Default Credentials or `GOOGLE_APPLICATION_CREDENTIALS`
-  - `api_key`: uses a plain GCP API key set in `VERTEX_API_KEY` with `GOOGLE_CLOUD_PROJECT` (and optional `GOOGLE_CLOUD_LOCATION`)
-- Optional model override: `VTO_VIRTUAL_TRY_ON_MODEL` (API-key launcher defaults to `virtual-try-on-preview-08-04`)
+  - `api_key`: uses a plain GCP API key set in `VERTEX_API_KEY`
+- Defaults from `VertexConfig` in `backend/app/services/vertex_tryon.py`:
+  - `VTO_VIRTUAL_TRY_ON_MODEL=virtual-try-on-001`
+  - `VTO_IMAGE_GENERATION_MODEL=imagen-4.0-generate-001`
+  - `VTO_PERSON_GENERATION=ALLOW_ALL`
 
 ## ZScaler / Corporate Proxy
 

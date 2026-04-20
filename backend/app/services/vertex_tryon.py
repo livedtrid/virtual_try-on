@@ -118,25 +118,19 @@ def _run_virtual_tryon_vertex(
     if auth_mode == "api_key":
         if not api_key:
             raise RuntimeError("VERTEX_API_KEY is required when VTO_AUTH_MODE=api_key")
-        project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "")
-        if not project_id:
-            raise RuntimeError("GOOGLE_CLOUD_PROJECT is required when VTO_AUTH_MODE=api_key")
         logger.info(
-            "Using Vertex try-on implementation project=%s location=%s auth_mode=api_key person_generation=%s person_mime_type=%s garment_mime_type=%s person_bytes=%s garment_bytes=%s",
-            project_id,
-            config.location,
+            "Using Vertex try-on implementation auth_mode=api_key person_generation=%s person_mime_type=%s garment_mime_type=%s person_bytes=%s garment_bytes=%s",
             config.person_generation.value,
             person_mime_type,
             garment_mime_type,
             len(person_image_bytes),
             len(garment_image_bytes),
         )
-        http_opts = _http_options(**{"x-goog-api-key": api_key})
-        # Use explicit header-based API key auth on Vertex endpoint.
+        # API key mode must not send project/location, otherwise SDK can prefer ADC.
+        http_opts = _http_options()
         client = genai.Client(
             vertexai=True,
-            project=project_id,
-            location=config.location,
+            api_key=api_key,
             **({"http_options": http_opts} if http_opts else {}),
         )
     else:

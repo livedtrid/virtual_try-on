@@ -6,10 +6,9 @@
 # The API key must have the Vertex AI API enabled on the GCP project.
 #
 # Usage:
-#   GOOGLE_CLOUD_PROJECT=my-project VERTEX_API_KEY=AIza... ./run-local-apikey.sh
+#   VERTEX_API_KEY=AIza... ./run-local-apikey.sh
 #
 # Optional settings:
-#   GOOGLE_CLOUD_LOCATION=us-central1   (default: us-central1)
 #   BACKEND_PORT=8080                   (default: 8080)
 #   FRONTEND_PORT=5173                  (default: 5173)
 # ---------------------------------------------------------------------------
@@ -25,28 +24,30 @@ if [[ ! -x "$BASE_RUNNER" ]]; then
 fi
 
 # ── Validate required env vars ───────────────────────────────────────────────
-if [[ -z "${GOOGLE_CLOUD_PROJECT:-}" ]]; then
-  echo "[error] GOOGLE_CLOUD_PROJECT is required."
-  echo "[hint]  Example: GOOGLE_CLOUD_PROJECT=my-project VERTEX_API_KEY=AIza... ./run-local-apikey.sh"
-  exit 1
-fi
-
 if [[ -z "${VERTEX_API_KEY:-}" ]]; then
   echo "[error] VERTEX_API_KEY is required."
-  echo "[hint]  Example: GOOGLE_CLOUD_PROJECT=my-project VERTEX_API_KEY=AIza... ./run-local-apikey.sh"
+  echo "[hint]  Example: VERTEX_API_KEY=AIza... ./run-local-apikey.sh"
   exit 1
 fi
 
 # ── Export settings for the backend ─────────────────────────────────────────
 export VTO_USE_VERTEX=true
 export VTO_AUTH_MODE=api_key
-export GOOGLE_CLOUD_LOCATION="${GOOGLE_CLOUD_LOCATION:-us-central1}"
-export VTO_VIRTUAL_TRY_ON_MODEL="${VTO_VIRTUAL_TRY_ON_MODEL:-virtual-try-on-preview-08-04}"
+
+if [[ -n "${GOOGLE_CLOUD_PROJECT:-}" ]]; then
+  echo "[apikey] Ignoring GOOGLE_CLOUD_PROJECT in API key mode."
+  unset GOOGLE_CLOUD_PROJECT
+fi
+if [[ -n "${GOOGLE_CLOUD_LOCATION:-}" ]]; then
+  echo "[apikey] Ignoring GOOGLE_CLOUD_LOCATION in API key mode."
+  unset GOOGLE_CLOUD_LOCATION
+fi
+if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+  echo "[apikey] Ignoring GOOGLE_APPLICATION_CREDENTIALS in API key mode."
+  unset GOOGLE_APPLICATION_CREDENTIALS
+fi
 
 echo "[apikey] Vertex AI enabled with API key auth"
-echo "[apikey] GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT"
-echo "[apikey] GOOGLE_CLOUD_LOCATION=$GOOGLE_CLOUD_LOCATION"
-echo "[apikey] VTO_VIRTUAL_TRY_ON_MODEL=$VTO_VIRTUAL_TRY_ON_MODEL"
 echo "[apikey] VERTEX_API_KEY=****${VERTEX_API_KEY: -4}"   # show only last 4 chars
 
 # ── ZScaler / corporate proxy CA bundle support ───────────────────────────
