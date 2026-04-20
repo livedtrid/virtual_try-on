@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+from dataclasses import dataclass
 import logging
 import os
 import time
@@ -8,6 +9,44 @@ from typing import Any
 
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_VERTEX_LOCATION = "us-central1"
+DEFAULT_VIRTUAL_TRY_ON_MODEL = "virtual-try-on-001"
+DEFAULT_IMAGE_GENERATION_MODEL = "imagen-4.0-generate-001"
+DEFAULT_PERSON_GENERATION = "ALLOW_ALL"
+
+
+@dataclass(frozen=True)
+class VertexConfig:
+    location: str
+    virtual_try_on_model: str
+    image_generation_model: str
+    person_generation: Any
+
+
+def _vertex_config_from_env(types: Any) -> VertexConfig:
+    person_generation_raw = os.getenv("VTO_PERSON_GENERATION", DEFAULT_PERSON_GENERATION).upper()
+    person_generation_map = {
+        "DONT_ALLOW": types.PersonGeneration.DONT_ALLOW,
+        "ALLOW_ADULT": types.PersonGeneration.ALLOW_ADULT,
+        "ALLOW_ALL": types.PersonGeneration.ALLOW_ALL,
+    }
+    person_generation = person_generation_map.get(
+        person_generation_raw,
+        types.PersonGeneration.ALLOW_ALL,
+    )
+    if person_generation_raw not in person_generation_map:
+        logger.warning(
+            "Invalid VTO_PERSON_GENERATION=%s. Falling back to ALLOW_ALL.",
+            person_generation_raw,
+        )
+
+    return VertexConfig(
+        location=os.getenv("GOOGLE_CLOUD_LOCATION", DEFAULT_VERTEX_LOCATION),
+        virtual_try_on_model=os.getenv("VTO_VIRTUAL_TRY_ON_MODEL", DEFAULT_VIRTUAL_TRY_ON_MODEL),
+        image_generation_model=os.getenv("VTO_IMAGE_GENERATION_MODEL", DEFAULT_IMAGE_GENERATION_MODEL),
+        person_generation=person_generation,
+    )
 
 
 def run_virtual_tryon(
@@ -57,23 +96,10 @@ def _run_virtual_tryon_vertex(
     from google import genai
     from google.genai import types
 
-    virtual_try_on = "virtual-try-on-001"
-    image_generation = "imagen-4.0-generate-001"
+    config = _vertex_config_from_env(types)
 
     auth_mode = os.getenv("VTO_AUTH_MODE", "adc").lower()  # "adc" | "api_key"
     api_key = os.getenv("VERTEX_API_KEY", "")
-    person_generation_raw = os.getenv("VTO_PERSON_GENERATION", "ALLOW_ALL").upper()
-    person_generation_map = {
-        "DONT_ALLOW": types.PersonGeneration.DONT_ALLOW,
-        "ALLOW_ADULT": types.PersonGeneration.ALLOW_ADULT,
-        "ALLOW_ALL": types.PersonGeneration.ALLOW_ALL,
-    }
-    person_generation = person_generation_map.get(person_generation_raw, types.PersonGeneration.ALLOW_ALL)
-    if person_generation_raw not in person_generation_map:
-        logger.warning(
-            "Invalid VTO_PERSON_GENERATION=%s. Falling back to ALLOW_ALL.",
-            person_generation_raw,
-        )
 
     # ── CA bundle (ZScaler / corporate proxy support) ────────────────────────
     # REQUESTS_CA_BUNDLE is set by the launch scripts when a custom cert is found.
@@ -94,7 +120,7 @@ def _run_virtual_tryon_vertex(
             raise RuntimeError("VERTEX_API_KEY is required when VTO_AUTH_MODE=api_key")
         logger.info(
             "Using Vertex try-on implementation auth_mode=api_key person_generation=%s person_mime_type=%s garment_mime_type=%s person_bytes=%s garment_bytes=%s",
-            person_generation.value,
+            config.person_generation.value,
             person_mime_type,
             garment_mime_type,
             len(person_image_bytes),
@@ -109,15 +135,14 @@ def _run_virtual_tryon_vertex(
         )
     else:
         project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "")
-        location = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
         if not project_id:
             raise RuntimeError("GOOGLE_CLOUD_PROJECT is required when VTO_AUTH_MODE=adc")
         logger.info(
             "Using Vertex try-on implementation project=%s location=%s auth_mode=%s person_generation=%s person_mime_type=%s garment_mime_type=%s person_bytes=%s garment_bytes=%s",
             project_id,
-            location,
+            config.location,
             auth_mode,
-            person_generation.value,
+            config.person_generation.value,
             person_mime_type,
             garment_mime_type,
             len(person_image_bytes),
@@ -128,18 +153,18 @@ def _run_virtual_tryon_vertex(
         client = genai.Client(
             vertexai=True,
             project=project_id,
-            location=location,
+            location=config.location,
             **({"http_options": http_opts} if http_opts else {}),
         )
 
     logger.info(
         "Calling Vertex AI recontext_image model=%s (image_generation_model=%s)",
-        virtual_try_on,
-        image_generation,
+        config.virtual_try_on_model,
+        config.image_generation_model,
     )
     start_time = time.monotonic()
     response = client.models.recontext_image(
-        model=virtual_try_on,
+        model=config.virtual_try_on_model,
         source=types.RecontextImageSource(
             person_image=types.Image(image_bytes=person_image_bytes, mime_type=person_mime_type),
             product_images=[
@@ -153,7 +178,7 @@ def _run_virtual_tryon_vertex(
         ),
         config=types.RecontextImageConfig(
             number_of_images=1,
-            person_generation=person_generation,
+            person_generation=config.person_generation,
             output_mime_type="image/png",
         ),
     )
