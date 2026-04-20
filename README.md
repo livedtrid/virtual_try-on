@@ -79,12 +79,12 @@ $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\service-account.json"
 
 **macOS / Linux:**
 ```bash
-GOOGLE_CLOUD_PROJECT=your-project-id VERTEX_API_KEY=AIza... ./run-local-apikey.sh
+VERTEX_API_KEY=AIza... ./run-local-apikey.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-$env:GOOGLE_CLOUD_PROJECT="your-project-id"; $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
+$env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
 ```
 
 ### 1) Run backend
@@ -170,7 +170,7 @@ Vertex mode env vars:
 - `VTO_USE_VERTEX=true`
 - `VTO_AUTH_MODE` — `adc` (default) or `api_key`
   - `adc`: uses Application Default Credentials or `GOOGLE_APPLICATION_CREDENTIALS`
-  - `api_key`: uses a plain GCP API key set in `VERTEX_API_KEY`
+  - `api_key`: uses a plain GCP API key set in `VERTEX_API_KEY` and intentionally does not send project/location
 
 ## ZScaler / Corporate Proxy
 

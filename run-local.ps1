@@ -21,7 +21,8 @@ if (-not (Test-Path (Join-Path $BackendDir ".venv"))) {
     python -m venv (Join-Path $BackendDir ".venv")
 }
 
-$hasApp = & $VenvPython -c "import fastapi" 2>$null; if ($LASTEXITCODE -ne 0) {
+& $VenvPython -c "import importlib.util,sys;sys.exit(0 if importlib.util.find_spec('fastapi') else 1)" *> $null
+if ($LASTEXITCODE -ne 0) {
     Write-Host "[setup] Installing backend dependencies..."
     & $VenvPip install -r (Join-Path $BackendDir "requirements.txt")
 }
