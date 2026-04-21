@@ -66,8 +66,12 @@ body {
 }
 
 .gallery-column {
+  display: block;
+}
+
+.media-grid {
   display: grid;
-  grid-template-columns: 184px 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
 
@@ -265,13 +269,13 @@ button:disabled {
   }
 
   .gallery-column {
+    display: block;
+  }
+
+  .media-grid {
     grid-template-columns: 1fr;
   }
 
-  .thumbnail-list {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    grid-auto-rows: auto;
-  }
 
   .details-column h1,
   .text-block h2 {

@@ -4,12 +4,11 @@ import TryOnWidget from "./components/TryOnWidget";
 import { PRODUCT_DETAIL } from "./products";
 
 export default function App() {
-  const [selectedMediaId, setSelectedMediaId] = useState(PRODUCT_DETAIL.media[0]?.id || "");
   const [activeProduct, setActiveProduct] = useState(null);
   const [showTryOnWidget, setShowTryOnWidget] = useState(false);
 
-  const selectedMedia = PRODUCT_DETAIL.media.find((media) => media.id === selectedMediaId) || PRODUCT_DETAIL.media[0] || null;
   const tryOnMedia = PRODUCT_DETAIL.media.find((media) => media.tryOnEnabled) || null;
+  const secondaryMedia = PRODUCT_DETAIL.media.find((media) => !media.tryOnEnabled) || null;
 
   function handleOpenTryOn(product) {
     setActiveProduct(product);
@@ -39,29 +38,21 @@ export default function App() {
 
       <section className="pdp-layout">
         <div className="gallery-column">
-          <div className="thumbnail-list" role="tablist" aria-label="Product media">
-            {PRODUCT_DETAIL.media.map((media) => (
-              <button
-                key={media.id}
-                type="button"
-                className={`thumbnail ${selectedMedia?.id === media.id ? "thumbnail--active" : ""}`}
-                onClick={() => setSelectedMediaId(media.id)}
-              >
-                <img src={`${import.meta.env.BASE_URL}${media.asset}`} alt={media.label} />
-              </button>
-            ))}
-          </div>
+          <div className="media-grid" aria-label="Product photos">
+            <div className="hero-media">
+              {tryOnMedia ? <img src={`${import.meta.env.BASE_URL}${tryOnMedia.asset}`} alt={tryOnMedia.label} className="hero-image" /> : null}
+              {tryOnMedia ? (
+                <button className="primary-cta primary-cta--overlay" type="button" onClick={() => handleOpenTryOn(tryOnMedia)}>
+                  {tryOnMedia.tryOnCtaLabel || "Experimenta agora"}
+                </button>
+              ) : null}
+            </div>
 
-          <div className="hero-media">
-            {selectedMedia ? (
-              <img src={`${import.meta.env.BASE_URL}${selectedMedia.asset}`} alt={selectedMedia.label} className="hero-image" />
-            ) : null}
-
-            {selectedMedia?.tryOnEnabled && tryOnMedia ? (
-              <button className="primary-cta primary-cta--overlay" type="button" onClick={() => handleOpenTryOn(tryOnMedia)}>
-                {selectedMedia.tryOnCtaLabel || "Experimenta agora"}
-              </button>
-            ) : null}
+            <div className="hero-media">
+              {secondaryMedia ? (
+                <img src={`${import.meta.env.BASE_URL}${secondaryMedia.asset}`} alt={secondaryMedia.label} className="hero-image" />
+              ) : null}
+            </div>
           </div>
         </div>
 
