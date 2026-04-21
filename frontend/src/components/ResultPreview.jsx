@@ -1,24 +1,32 @@
-export default function ResultPreview({ isLoading, errorMessage, resultData }) {
-  if (isLoading) {
-    return <p className="muted">Generating result image...</p>;
+import LoadingState from "./LoadingState";
+
+export default function ResultPreview({ isProcessing, error, resultImage }) {
+  if (isProcessing) {
+    return <LoadingState />;
   }
 
-  if (errorMessage) {
-    return <p className="error">{errorMessage}</p>;
+  if (error) {
+    return (
+      <div className="result-card">
+        <p className="result-card__step">Step: error</p>
+        <p className="error">{error}</p>
+      </div>
+    );
   }
 
-  if (!resultData) {
-    return <p className="muted">Upload an image and run the try-on to see the result.</p>;
+  if (!resultImage) {
+    return (
+      <div className="result-card result-card--placeholder">
+        <p className="result-card__step">Step: idle</p>
+        <p className="muted">Take or upload a photo to run virtual try-on.</p>
+      </div>
+    );
   }
 
   return (
-    <div>
-      <p>Generated result:</p>
-      <img
-        className="result-image"
-        src={`data:${resultData.mime_type};base64,${resultData.image_base64}`}
-        alt="Try-on result"
-      />
+    <div className="result-card">
+      <p className="result-card__step">Step: completed</p>
+      <img className="result-image" src={resultImage} alt="Generated try-on result" />
     </div>
   );
 }

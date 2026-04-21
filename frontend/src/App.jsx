@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import TryOnWidget from "./components/TryOnWidget";
+import VirtualTryOnWidget from "./components/VirtualTryOnWidget";
 import { PRODUCT_DETAIL } from "./products";
 
 export default function App() {
@@ -88,7 +88,7 @@ export default function App() {
 
       {showTryOnWidget && activeProduct ? (
         <section className="tryon-panel">
-          <TryOnWidget selectedProduct={activeProduct} onClose={handleCloseTryOn} />
+          <VirtualTryOnWidget selectedProduct={activeProduct} onClose={handleCloseTryOn} />
         </section>
       ) : null}
     </main>
