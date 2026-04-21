@@ -1,16 +1,15 @@
 import { useState } from "react";
 
 import TryOnWidget from "./components/TryOnWidget";
-import { PRODUCTS } from "./products";
+import { PRODUCT_DETAIL } from "./products";
 
 export default function App() {
-  const [selectedMediaId, setSelectedMediaId] = useState(PRODUCTS[0]?.id || "");
+  const [selectedMediaId, setSelectedMediaId] = useState(PRODUCT_DETAIL.media[0]?.id || "");
   const [activeProduct, setActiveProduct] = useState(null);
   const [showTryOnWidget, setShowTryOnWidget] = useState(false);
 
-  const selectedMedia = PRODUCTS.find((product) => product.id === selectedMediaId) || PRODUCTS[0] || null;
-  const firstTryOnProduct = PRODUCTS.find((product) => product.tryOnEnabled) || null;
-  const tryOnProduct = selectedMedia?.tryOnEnabled ? selectedMedia : firstTryOnProduct;
+  const selectedMedia = PRODUCT_DETAIL.media.find((media) => media.id === selectedMediaId) || PRODUCT_DETAIL.media[0] || null;
+  const tryOnMedia = PRODUCT_DETAIL.media.find((media) => media.tryOnEnabled) || null;
 
   function handleOpenTryOn(product) {
     setActiveProduct(product);
@@ -41,14 +40,14 @@ export default function App() {
       <section className="pdp-layout">
         <div className="gallery-column">
           <div className="thumbnail-list" role="tablist" aria-label="Product media">
-            {PRODUCTS.map((product) => (
+            {PRODUCT_DETAIL.media.map((media) => (
               <button
-                key={product.id}
+                key={media.id}
                 type="button"
-                className={`thumbnail ${selectedMedia?.id === product.id ? "thumbnail--active" : ""}`}
-                onClick={() => setSelectedMediaId(product.id)}
+                className={`thumbnail ${selectedMedia?.id === media.id ? "thumbnail--active" : ""}`}
+                onClick={() => setSelectedMediaId(media.id)}
               >
-                <img src={`${import.meta.env.BASE_URL}${product.asset}`} alt={product.label} />
+                <img src={`${import.meta.env.BASE_URL}${media.asset}`} alt={media.label} />
               </button>
             ))}
           </div>
@@ -58,16 +57,16 @@ export default function App() {
               <img src={`${import.meta.env.BASE_URL}${selectedMedia.asset}`} alt={selectedMedia.label} className="hero-image" />
             ) : null}
 
-            {tryOnProduct ? (
-              <button className="primary-cta primary-cta--overlay" type="button" onClick={() => handleOpenTryOn(tryOnProduct)}>
-                {tryOnProduct.tryOnCtaLabel || "Experimentar agora"}
+            {selectedMedia?.tryOnEnabled && tryOnMedia ? (
+              <button className="primary-cta primary-cta--overlay" type="button" onClick={() => handleOpenTryOn(tryOnMedia)}>
+                {selectedMedia.tryOnCtaLabel || "Experimenta agora"}
               </button>
             ) : null}
           </div>
         </div>
 
         <aside className="details-column">
-          <h1>Sweatshirt Vermelha para Crianca SLB</h1>
+          <h1>{PRODUCT_DETAIL.title}</h1>
           <div className="price-block">
             <p><span>Socio</span> 44,99EUR</p>
             <p><span>Adepto</span> 49,99EUR</p>
