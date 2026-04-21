@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import VirtualTryOnWidget from "./components/VirtualTryOnWidget";
 import { PRODUCT_DETAIL } from "./products";
@@ -18,6 +18,15 @@ export default function App() {
   function handleCloseTryOn() {
     setShowTryOnWidget(false);
   }
+
+  useEffect(() => {
+    if (!showTryOnWidget) return undefined;
+    function onKeyDown(e) {
+      if (e.key === "Escape") handleCloseTryOn();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [showTryOnWidget]);
 
   return (
     <main className="store-page">
@@ -87,9 +96,12 @@ export default function App() {
       </section>
 
       {showTryOnWidget && activeProduct ? (
-        <section className="tryon-panel">
-          <VirtualTryOnWidget selectedProduct={activeProduct} onClose={handleCloseTryOn} />
-        </section>
+        <div className="widget-overlay" role="dialog" aria-modal="true" aria-label="Virtual Try-On">
+          <div className="widget-overlay__backdrop" onClick={handleCloseTryOn} aria-hidden="true" />
+          <div className="widget-overlay__panel">
+            <VirtualTryOnWidget selectedProduct={activeProduct} onClose={handleCloseTryOn} />
+          </div>
+        </div>
       ) : null}
     </main>
   );

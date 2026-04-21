@@ -2,18 +2,24 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  height: 100%;
+  overflow: hidden;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   background: #f3f3f3;
   color: #232323;
 }
 
 .store-page {
-  min-height: 100vh;
+  height: 100vh;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 24px 32px;
+  padding: 0 24px 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .store-header {
@@ -58,21 +64,29 @@ body {
 }
 
 .pdp-layout {
-  margin-top: 24px;
+  flex: 1;
+  min-height: 0;
+  margin-top: 16px;
   display: grid;
-  grid-template-columns: minmax(560px, 2fr) minmax(320px, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
   gap: 32px;
   align-items: start;
+  overflow: hidden;
 }
 
 .gallery-column {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .media-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+  flex: 1;
+  min-height: 0;
 }
 
 .thumbnail-list {
@@ -102,13 +116,14 @@ body {
 .hero-media {
   position: relative;
   background: #e8e8e8;
-  min-height: 520px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .hero-image {
   width: 100%;
   height: 100%;
-  min-height: 520px;
   object-fit: cover;
   display: block;
 }
@@ -133,9 +148,15 @@ button {
   bottom: 14px;
 }
 
+.details-column {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 .details-column h1 {
   margin: 0;
-  font-size: 48px;
+  font-size: 36px;
   line-height: 1.05;
 }
 
@@ -200,11 +221,31 @@ button {
   line-height: 1.45;
 }
 
-.tryon-panel {
-  margin-top: 24px;
+.widget-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+}
+
+.widget-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 10, 18, 0.68);
+  cursor: pointer;
+}
+
+.widget-overlay__panel {
+  position: relative;
+  z-index: 1;
+  width: min(540px, 96vw);
+  max-height: min(860px, 96vh);
   background: #fff;
-  border: 1px solid #e0e0e0;
-  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.38);
+  overflow-y: auto;
+  padding: 24px;
 }
 
 .widget-header {
@@ -431,19 +472,29 @@ button:disabled {
 @media (max-width: 1080px) {
   .pdp-layout {
     grid-template-columns: 1fr;
+    overflow-y: auto;
   }
 
   .gallery-column {
-    display: block;
+    height: auto;
   }
 
   .media-grid {
     grid-template-columns: 1fr;
+    flex: none;
   }
 
+  .hero-media {
+    min-height: 40vw;
+  }
+
+  .details-column {
+    height: auto;
+    overflow-y: visible;
+  }
 
   .details-column h1,
   .text-block h2 {
-    font-size: 32px;
+    font-size: 26px;
   }
 }
