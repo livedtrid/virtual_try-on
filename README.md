@@ -10,11 +10,17 @@ A proof-of-concept Virtual Try-On experience with a static React frontend and an
 
 ## Current Product UX
 
-- Product cards are rendered from `frontend/src/products.js`.
-- The try-on panel is hidden by default and only opens after clicking `Experimentar agora` on a product image.
-- The CTA is shown as an overlay in the bottom-right of each try-on-enabled product image (`frontend/src/App.jsx`).
-- The widget no longer uses a product dropdown; the selected card drives garment selection.
-- In the widget, users can upload an image or capture one from camera (`frontend/src/components/ImageUploader.jsx`).
+- The frontend is a single Product Detail Page (PDP) rendered from `frontend/src/App.jsx` and `frontend/src/products.js`.
+- The gallery is fixed to two images of the same product; only the try-on-enabled image (left) shows `Experimenta agora`.
+- The storefront layout is viewport-locked (no page vertical scroll), with internal scrolling only where needed.
+- Clicking `Experimenta agora` opens the try-on UI as a fixed overlay modal on top of the entire page (not inline below the product).
+- The overlay supports close via `Fechar`, `ESC`, and backdrop click (`frontend/src/App.jsx`).
+- The widget flow is implemented in `frontend/src/components/VirtualTryOnWidget.jsx` and `frontend/src/components/CameraCaptureModal.jsx`.
+- Camera capture uses `react-camera-pro` with capture -> preview -> retake/use flow, plus camera switch and flash when available.
+- Fallback capture is supported with `<input type="file" accept="image/*" capture="environment">` in `frontend/src/components/CameraCaptureModal.jsx`.
+- Result rendering is split into `frontend/src/components/ResultPreview.jsx` and `frontend/src/components/LoadingState.jsx`.
+- Frontend request orchestration is isolated in `frontend/src/services/virtualTryOnService.js` via `sendPhotoToVirtualTryOn(...)`, which then calls `runTryOn(...)`.
+- All photo/result state is in React memory only; nothing is persisted across refreshes.
 
 ## Local Development
 
