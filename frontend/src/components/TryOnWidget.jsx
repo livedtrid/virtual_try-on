@@ -14,7 +14,7 @@ function buildFileName(product) {
   return `${product.id}.${extension}`;
 }
 
-export default function TryOnWidget({ selectedProduct }) {
+export default function TryOnWidget({ selectedProduct, onClose }) {
   const [personFile, setPersonFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -61,7 +61,14 @@ export default function TryOnWidget({ selectedProduct }) {
 
   return (
     <div className="widget">
-      <h2>Virtual Try-On Widget</h2>
+      <div className="widget-header">
+        <h2>Provador Virtual</h2>
+        {onClose ? (
+          <button type="button" className="close-btn" onClick={onClose}>
+            Fechar
+          </button>
+        ) : null}
+      </div>
       <p className="muted inline-note">Upload a person image and run try-on for {selectedProduct?.label || "the selected item"}.</p>
 
       <ImageUploader onFileChange={setPersonFile} previewUrl={previewUrl} />

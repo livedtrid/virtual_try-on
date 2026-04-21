@@ -10,7 +10,7 @@ const PRODUCTS = [
     id: "trousers",
     label: "Trousers",
     asset: "products/trousers.jpg",
-    tryOnEnabled: false,
+    tryOnEnabled: true,
     tryOnCtaLabel: "Experimentar agora",
   },
 ];
