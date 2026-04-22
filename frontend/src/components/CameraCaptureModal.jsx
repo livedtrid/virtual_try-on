@@ -1,18 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera } from "react-camera-pro";
 
 const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export default function CameraCaptureModal({ isOpen, isBusy, onClose, onConfirm }) {
   const modalRef = useRef(null);
-  const cameraRef = useRef(null);
+  const videoRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const [previewPhoto, setPreviewPhoto] = useState("");
-  const [numberOfCameras, setNumberOfCameras] = useState(0);
+  const [devices, setDevices] = useState([]);
+  const [activeDeviceIndex, setActiveDeviceIndex] = useState(0);
+  const [stream, setStream] = useState(null);
   const [cameraError, setCameraError] = useState("");
-  const [flashEnabled, setFlashEnabled] = useState(false);
-  const [flashSupported, setFlashSupported] = useState(false);
 
   const stepLabel = useMemo(() => (previewPhoto ? "previewing" : "capturing"), [previewPhoto]);
 
@@ -20,8 +19,6 @@ export default function CameraCaptureModal({ isOpen, isBusy, onClose, onConfirm 
     if (!isOpen) {
       setPreviewPhoto("");
       setCameraError("");
-      setFlashEnabled(false);
-      setFlashSupported(false);
       return;
     }
 
@@ -62,6 +59,63 @@ export default function CameraCaptureModal({ isOpen, isBusy, onClose, onConfirm 
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isBusy, isOpen, onClose]);
 
+  useEffect(() => {
+    if (!isOpen || previewPhoto) return undefined;
+
+    let isMounted = true;
+
+    async function startCamera() {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error("This browser does not support camera access.");
+        }
+
+        const availableDevices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = availableDevices.filter((device) => device.kind === "videoinput");
+
+        if (isMounted) {
+          setDevices(videoInputs);
+        }
+
+        const selectedDevice = videoInputs[activeDeviceIndex];
+        const constraints = selectedDevice
+          ? { video: { deviceId: { exact: selectedDevice.deviceId } }, audio: false }
+          : { video: { facingMode: "environment" }, audio: false };
+
+        const nextStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        if (!isMounted) {
+          nextStream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        setStream(nextStream);
+        setCameraError("");
+      } catch (error) {
+        setCameraError(error instanceof Error ? error.message : "Unable to access camera. Use gallery upload instead.");
+      }
+    }
+
+    startCamera();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeDeviceIndex, isOpen, previewPhoto]);
+
+  useEffect(() => {
+    if (!videoRef.current || !stream) return;
+    videoRef.current.srcObject = stream;
+  }, [stream]);
+
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [stream]);
+
   function handleBackdropClick(event) {
     if (event.target !== event.currentTarget || isBusy) return;
     onClose();
@@ -69,11 +123,23 @@ export default function CameraCaptureModal({ isOpen, isBusy, onClose, onConfirm 
 
   function handleCapture() {
     try {
-      const photo = cameraRef.current?.takePhoto();
-      if (!photo) {
+      const video = videoRef.current;
+      if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
         setCameraError("Unable to capture a photo. Please try again.");
         return;
       }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        setCameraError("Unable to capture a photo. Please try again.");
+        return;
+      }
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const photo = canvas.toDataURL("image/png");
       setCameraError("");
       setPreviewPhoto(photo);
     } catch (error) {
@@ -82,24 +148,13 @@ export default function CameraCaptureModal({ isOpen, isBusy, onClose, onConfirm 
   }
 
   function handleSwitchCamera() {
-    try {
-      cameraRef.current?.switchCamera();
-      setFlashEnabled(false);
-      setFlashSupported(Boolean(cameraRef.current?.torchSupported));
-      setCameraError("");
-    } catch (error) {
-      setCameraError(error instanceof Error ? error.message : "Unable to switch camera.");
-    }
+    if (devices.length < 2) return;
+    setActiveDeviceIndex((current) => (current + 1) % devices.length);
+    setCameraError("");
   }
 
   function handleToggleFlash() {
-    try {
-      const nextValue = cameraRef.current?.toggleTorch?.();
-      setFlashEnabled(Boolean(nextValue));
-      setCameraError("");
-    } catch {
-      setCameraError("Flash is not available on this device/browser.");
-    }
+    setCameraError("Flash control is not supported in this browser. Use device camera app if needed.");
   }
 
   function handleRetake() {
@@ -107,11 +162,24 @@ export default function CameraCaptureModal({ isOpen, isBusy, onClose, onConfirm 
     setCameraError("");
   }
 
+  function stopStream() {
+    if (!stream) return;
+    stream.getTracks().forEach((track) => track.stop());
+    setStream(null);
+  }
+
+  useEffect(() => {
+    if (!isOpen || previewPhoto) {
+      stopStream();
+    }
+  }, [isOpen, previewPhoto]);
+
   function handleUsePhoto() {
     if (!previewPhoto) return;
     onConfirm(previewPhoto);
     setPreviewPhoto("");
     setCameraError("");
+    stopStream();
   }
 
   function handleFallbackUpload(event) {
@@ -145,24 +213,7 @@ export default function CameraCaptureModal({ isOpen, isBusy, onClose, onConfirm 
           <div className="camera-modal__camera-step">
             <p className="camera-modal__status">Step: {stepLabel}</p>
             <div className="camera-modal__viewport" aria-live="polite">
-              <Camera
-                ref={cameraRef}
-                facingMode="environment"
-                numberOfCamerasCallback={(count) => {
-                  setNumberOfCameras(count);
-                  setFlashSupported(Boolean(cameraRef.current?.torchSupported));
-                }}
-                errorMessages={{
-                  noCameraAccessible: "No camera available. Use gallery upload instead.",
-                  permissionDenied: "Camera access denied. Allow camera access or use gallery upload.",
-                  switchCamera: "Unable to switch camera.",
-                  canvas: "Browser does not support camera capture canvas.",
-                }}
-                videoReadyCallback={() => {
-                  setCameraError("");
-                  setFlashSupported(Boolean(cameraRef.current?.torchSupported));
-                }}
-              />
+              <video ref={videoRef} autoPlay playsInline muted className="camera-modal__video" />
             </div>
 
             {cameraError ? <p className="error camera-modal__error">{cameraError}</p> : null}
@@ -174,11 +225,11 @@ export default function CameraCaptureModal({ isOpen, isBusy, onClose, onConfirm 
               <button type="button" className="camera-modal__capture" onClick={handleCapture}>
                 Take Photo
               </button>
-              <button type="button" className="camera-modal__secondary" onClick={handleSwitchCamera} disabled={numberOfCameras < 2}>
+              <button type="button" className="camera-modal__secondary" onClick={handleSwitchCamera} disabled={devices.length < 2}>
                 Switch Camera
               </button>
-              <button type="button" className="camera-modal__secondary" onClick={handleToggleFlash} disabled={!flashSupported}>
-                {flashEnabled ? "Flash Off" : "Flash On"}
+              <button type="button" className="camera-modal__secondary" onClick={handleToggleFlash}>
+                Flash
               </button>
             </div>
           </div>

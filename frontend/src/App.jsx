@@ -7,9 +7,6 @@ export default function App() {
   const [activeProduct, setActiveProduct] = useState(null);
   const [showTryOnWidget, setShowTryOnWidget] = useState(false);
 
-  const tryOnMedia = PRODUCT_DETAIL.media.find((media) => media.tryOnEnabled) || null;
-  const secondaryMedia = PRODUCT_DETAIL.media.find((media) => !media.tryOnEnabled) || null;
-
   function handleOpenTryOn(product) {
     setActiveProduct(product);
     setShowTryOnWidget(true);
@@ -48,20 +45,14 @@ export default function App() {
       <section className="pdp-layout">
         <div className="gallery-column">
           <div className="media-grid" aria-label="Product photos">
-            <div className="hero-media">
-              {tryOnMedia ? <img src={`${import.meta.env.BASE_URL}${tryOnMedia.asset}`} alt={tryOnMedia.label} className="hero-image" /> : null}
-              {tryOnMedia ? (
-                <button className="primary-cta primary-cta--overlay" type="button" onClick={() => handleOpenTryOn(tryOnMedia)}>
-                  {tryOnMedia.tryOnCtaLabel || "Experimenta agora"}
+            {PRODUCT_DETAIL.media.map((media) => (
+              <div key={media.id} className="hero-media">
+                <img src={`${import.meta.env.BASE_URL}${media.asset}`} alt={media.label} className="hero-image" />
+                <button className="primary-cta primary-cta--overlay" type="button" onClick={() => handleOpenTryOn(media)}>
+                  {media.tryOnCtaLabel || "Experimenta agora"}
                 </button>
-              ) : null}
-            </div>
-
-            <div className="hero-media">
-              {secondaryMedia ? (
-                <img src={`${import.meta.env.BASE_URL}${secondaryMedia.asset}`} alt={secondaryMedia.label} className="hero-image" />
-              ) : null}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
 
