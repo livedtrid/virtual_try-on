@@ -13,6 +13,9 @@ frontend/dist/
 .env
 .env.*
 !.env.example
+!frontend/.env.development.example
+!frontend/.env.staging.example
+!frontend/.env.production.example
 
 # IDE
 .DS_Store

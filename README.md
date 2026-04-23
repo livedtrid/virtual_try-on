@@ -8,6 +8,21 @@ A proof-of-concept Virtual Try-On experience with a static React frontend and an
 - `backend/` - FastAPI API with `/health` and `/tryon`
 - `backend/app/services/vertex_tryon.py` - isolated service seam for Vertex AI logic
 
+## Split-Ready Repository Map (Azure DevOps)
+
+This monorepo is prepared to be split into three repositories with minimal change:
+
+- `frontend/` -> `google-virtual-try-on-frontend`
+- `backend/` -> `google-virtual-try-on-backend`
+- `ops-docs/` -> `google-virtual-try-on-ops-docs`
+
+Each app folder now includes:
+
+- local `README.md` with the shared API contract
+- `azure-pipelines.yml` CI definition
+
+Shared reusable templates and migration checklists are under `ops-docs/`.
+
 ## Current Product UX
 
 - The frontend is a single Product Detail Page (PDP) rendered from `frontend/src/App.jsx` and `frontend/src/products.js`.
