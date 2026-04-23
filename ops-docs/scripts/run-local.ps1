@@ -1,12 +1,13 @@
 # run-local.ps1
 # Starts both the FastAPI backend and the Vite frontend.
 # Usage:
-#   .\run-local.ps1
-#   $env:BACKEND_PORT=8081; $env:FRONTEND_PORT=5174; .\run-local.ps1
+#   .\ops-docs\scripts\run-local.ps1
+#   $env:BACKEND_PORT=8081; $env:FRONTEND_PORT=5174; .\ops-docs\scripts\run-local.ps1
 
 $ErrorActionPreference = "Stop"
 
-$RootDir     = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$RootDir     = Split-Path -Parent (Split-Path -Parent $ScriptDir)
 $BackendDir  = Join-Path $RootDir "backend"
 $FrontendDir = Join-Path $RootDir "frontend"
 $BackendPort  = if ($env:BACKEND_PORT)  { $env:BACKEND_PORT  } else { "8080" }

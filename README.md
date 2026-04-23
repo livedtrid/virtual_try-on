@@ -4,9 +4,10 @@ A proof-of-concept Virtual Try-On experience with a static React frontend and an
 
 ## Architecture
 
-- `frontend/` - React + Vite static app (deployable to GitHub Pages)
+- `frontend/` - React + Vite static app for Azure Static Web Apps or any other static host
 - `backend/` - FastAPI API with `/health` and `/tryon`
 - `backend/app/services/vertex_tryon.py` - isolated service seam for Vertex AI logic
+- `ops-docs/` - shared scripts, deployment runbooks, and repo-ops templates
 
 ## Split-Ready Repository Map (Azure DevOps)
 
@@ -54,38 +55,40 @@ Shared reusable templates and migration checklists are under `ops-docs/`.
 
 ### One-command startup (backend + frontend)
 
+Shared helper scripts now live under `ops-docs/scripts/`.
+
 **macOS / Linux:**
 ```bash
-./run-local.sh
+./ops-docs/scripts/run-local.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\run-local.ps1
+.\ops-docs\scripts\run-local.ps1
 ```
 
 These scripts start both services, auto-create `backend/.venv` and `frontend/.env` when missing, and install dependencies on first run.
 
 Optional custom ports — macOS/Linux:
 ```bash
-BACKEND_PORT=8081 FRONTEND_PORT=5174 ./run-local.sh
+BACKEND_PORT=8081 FRONTEND_PORT=5174 ./ops-docs/scripts/run-local.sh
 ```
 
 Optional custom ports — Windows:
 ```powershell
-$env:BACKEND_PORT=8081; $env:FRONTEND_PORT=5174; .\run-local.ps1
+$env:BACKEND_PORT=8081; $env:FRONTEND_PORT=5174; .\ops-docs\scripts\run-local.ps1
 ```
 
 ### One-command startup in Vertex mode
 
 **macOS / Linux:**
 ```bash
-GOOGLE_CLOUD_PROJECT=your-project-id ./run-local-vertex.sh
+GOOGLE_CLOUD_PROJECT=your-project-id ./ops-docs/scripts/run-local-vertex.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-$env:GOOGLE_CLOUD_PROJECT="your-project-id"; .\run-local-vertex.ps1
+$env:GOOGLE_CLOUD_PROJECT="your-project-id"; .\ops-docs\scripts\run-local-vertex.ps1
 ```
 
 Optional settings — macOS/Linux:
@@ -93,7 +96,7 @@ Optional settings — macOS/Linux:
 GOOGLE_CLOUD_PROJECT=your-project-id \
 GOOGLE_CLOUD_LOCATION=us-central1 \
 GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/service-account.json \
-./run-local-vertex.sh
+./ops-docs/scripts/run-local-vertex.sh
 ```
 
 Optional settings — Windows:
@@ -101,19 +104,19 @@ Optional settings — Windows:
 $env:GOOGLE_CLOUD_PROJECT="your-project-id"
 $env:GOOGLE_CLOUD_LOCATION="us-central1"
 $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\service-account.json"
-.\run-local-vertex.ps1
+.\ops-docs\scripts\run-local-vertex.ps1
 ```
 
 ### One-command startup in Vertex mode with API Key
 
 **macOS / Linux:**
 ```bash
-VERTEX_API_KEY=AIza... ./run-local-apikey.sh
+VERTEX_API_KEY=AIza... ./ops-docs/scripts/run-local-apikey.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-$env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
+$env:VERTEX_API_KEY="AIza..."; .\ops-docs\scripts\run-local-apikey.ps1
 ```
 
 In API-key mode, the launchers clear `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`, and `GOOGLE_APPLICATION_CREDENTIALS` to avoid conflicting auth paths.
@@ -172,17 +175,23 @@ Response:
 }
 ```
 
-## GitHub Pages Deployment (Frontend)
+## Frontend Static Build Output
 
-This repo is configured with `/.github/workflows/deploy.yml` to build `frontend/` and deploy `frontend/dist` to Pages.
+The frontend build output is `frontend/dist`.
 
-The Vite base path is set in `frontend/vite.config.js` as:
+For local or manual packaging, you can either run:
 
-- `/virtual_try-on/`
+```bash
+cd frontend && npm run build
+```
 
-That matches:
+or use the helper script:
 
-- `https://livedtrid.github.io/virtual_try_on/`
+```bash
+./ops-docs/scripts/deploy-to-docs.sh
+```
+
+The helper name is legacy; it now builds `frontend/dist` for Azure or any other static host and does not recreate `/docs`.
 
 ## Connecting Frontend to Backend
 
@@ -218,7 +227,7 @@ Vertex mode env vars:
 
 If you are behind ZScaler or another TLS-inspecting proxy the Vertex AI SDK will fail to connect because it does not trust the corporate root certificate.
 
-Both `run-local-vertex.sh` and `run-local-apikey.sh` handle this automatically on macOS: they export the system keychain (which includes the ZScaler root CA when installed via MDM) into a PEM bundle and set `REQUESTS_CA_BUNDLE`, `SSL_CERT_FILE`, and `GRPC_DEFAULT_SSL_ROOTS_FILE_PATH` before starting the backend.
+Both `ops-docs/scripts/run-local-vertex.sh` and `ops-docs/scripts/run-local-apikey.sh` handle this automatically on macOS: they export the system keychain (which includes the ZScaler root CA when installed via MDM) into a PEM bundle and set `REQUESTS_CA_BUNDLE`, `SSL_CERT_FILE`, and `GRPC_DEFAULT_SSL_ROOTS_FILE_PATH` before starting the backend.
 
 You will see a log line like:
 
@@ -229,7 +238,7 @@ You will see a log line like:
 If you need to point to a specific cert file instead:
 
 ```bash
-VTO_CA_BUNDLE=/path/to/zscaler-ca.pem GOOGLE_CLOUD_PROJECT=my-project ./run-local-vertex.sh
+VTO_CA_BUNDLE=/path/to/zscaler-ca.pem GOOGLE_CLOUD_PROJECT=my-project ./ops-docs/scripts/run-local-vertex.sh
 ```
 
 All Google Cloud integration stays isolated in `backend/app/services/vertex_tryon.py`.

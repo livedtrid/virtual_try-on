@@ -5,7 +5,7 @@ Use this skill whenever working on architecture, repo scaffolding, frontend/back
 ## Project truth
 
 - Frontend: React + Vite
-- Hosting target: GitHub Pages
+- Hosting target: static hosting (for example Azure Static Web Apps)
 - Backend: Python + FastAPI
 - AI integration: Vertex AI Virtual Try-On
 - Frontend is static only
@@ -39,5 +39,5 @@ Use this skill whenever working on architecture, repo scaffolding, frontend/back
 Flag these as architectural errors:
 - direct Google SDK usage in React
 - hardcoded secrets
-- repo setup that cannot deploy to GitHub Pages
+- repo setup that cannot deploy the frontend as a static site
 - trying to solve camera AR before image upload flow is working

@@ -8,6 +8,7 @@ This folder is intended to become a small third repository for shared operationa
 - Shared API contract snippet for frontend/backend repos
 - Deployment runbooks (Google Cloud, Azure DevOps)
 - Migration checklists for onboarding and repo split tasks
+- Shared monorepo helper scripts under `ops-docs/scripts/`
 
 ## Suggested Repo Name
 

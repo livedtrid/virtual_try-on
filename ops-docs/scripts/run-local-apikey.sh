@@ -6,7 +6,7 @@
 # The API key must have the Vertex AI API enabled on the GCP project.
 #
 # Usage:
-#   VERTEX_API_KEY=AIza... ./run-local-apikey.sh
+#   VERTEX_API_KEY=AIza... ./ops-docs/scripts/run-local-apikey.sh
 #
 # Optional settings:
 #   BACKEND_PORT=8080                   (default: 8080)
@@ -26,7 +26,7 @@ fi
 # ── Validate required env vars ───────────────────────────────────────────────
 if [[ -z "${VERTEX_API_KEY:-}" ]]; then
   echo "[error] VERTEX_API_KEY is required."
-  echo "[hint]  Example: VERTEX_API_KEY=AIza... ./run-local-apikey.sh"
+  echo "[hint]  Example: VERTEX_API_KEY=AIza... ./ops-docs/scripts/run-local-apikey.sh"
   exit 1
 fi
 

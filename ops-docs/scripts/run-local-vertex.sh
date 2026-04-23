@@ -12,7 +12,7 @@ fi
 
 if [[ -z "${GOOGLE_CLOUD_PROJECT:-}" ]]; then
   echo "[error] GOOGLE_CLOUD_PROJECT is required for Vertex mode."
-  echo "[hint] Example: GOOGLE_CLOUD_PROJECT=my-project ./run-local-vertex.sh"
+  echo "[hint] Example: GOOGLE_CLOUD_PROJECT=my-project ./ops-docs/scripts/run-local-vertex.sh"
   exit 1
 fi
 

@@ -1,4 +1,7 @@
 # Repo Split Checklist (Monorepo -> 3 Azure DevOps Repos)
+
+Current monorepo note: shared helper scripts already live in `ops-docs/scripts/`.
+
 ## Target repos
 1. `google-virtual-try-on-frontend`
 2. `google-virtual-try-on-backend`
@@ -12,4 +15,4 @@
 - Enable CI pipeline per repo using `azure-pipelines.yml`
 - Configure `VITE_API_BASE_URL` in frontend pipeline per environment
 - Keep API contract copied from `templates/api-contract.md` in both app repos
-- Remove monorepo-specific scripts (`run-local*.ps1/.sh`) or re-home them into ops/docs
+- Keep shared helper scripts in `ops-docs/scripts/` or copy only the repo-specific ones into each extracted repo as needed

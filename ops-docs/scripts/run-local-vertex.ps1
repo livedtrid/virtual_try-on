@@ -2,7 +2,7 @@
 # Starts the Virtual Try-On stack in Vertex AI mode (ADC / service account).
 #
 # Usage:
-#   $env:GOOGLE_CLOUD_PROJECT="my-project"; .\run-local-vertex.ps1
+#   $env:GOOGLE_CLOUD_PROJECT="my-project"; .\ops-docs\scripts\run-local-vertex.ps1
 #
 # Optional:
 #   $env:GOOGLE_CLOUD_LOCATION="us-central1"
@@ -21,7 +21,7 @@ if (-not (Test-Path $BaseRunner)) {
 
 if (-not $env:GOOGLE_CLOUD_PROJECT) {
     Write-Host "[error] GOOGLE_CLOUD_PROJECT is required for Vertex mode."
-    Write-Host '[hint]  Example: $env:GOOGLE_CLOUD_PROJECT="my-project"; .\run-local-vertex.ps1'
+    Write-Host '[hint]  Example: $env:GOOGLE_CLOUD_PROJECT="my-project"; .\ops-docs\scripts\run-local-vertex.ps1'
     exit 1
 }
 
@@ -34,16 +34,17 @@ Write-Host "[vertex] Using GOOGLE_CLOUD_LOCATION=$env:GOOGLE_CLOUD_LOCATION"
 # ── CA bundle (ZScaler / corporate proxy) ────────────────────────────────────
 if ($env:VTO_CA_BUNDLE) {
     if (-not (Test-Path $env:VTO_CA_BUNDLE)) {
-        Write-Host "[warn]   VTO_CA_BUNDLE points to missing file: $env:VTO_CA_BUNDLE — ignoring"
+        Write-Host ("[warn]   VTO_CA_BUNDLE points to missing file: {0} - ignoring" -f $env:VTO_CA_BUNDLE)
     } else {
         $env:REQUESTS_CA_BUNDLE              = $env:VTO_CA_BUNDLE
         $env:SSL_CERT_FILE                   = $env:VTO_CA_BUNDLE
         $env:GRPC_DEFAULT_SSL_ROOTS_FILE_PATH = $env:VTO_CA_BUNDLE
-        Write-Host "[vertex] Using custom CA bundle: $env:VTO_CA_BUNDLE"
+        Write-Host ("[vertex] Using custom CA bundle: {0}" -f $env:VTO_CA_BUNDLE)
     }
 } else {
     Write-Host "[vertex] No VTO_CA_BUNDLE set."
-    Write-Host '[vertex] If ZScaler is active, export the cert and set $env:VTO_CA_BUNDLE="C:\path\to\zscaler-ca.pem"'
+    Write-Host "[vertex] If ZScaler is active, export the cert and set VTO_CA_BUNDLE before running this script."
+    Write-Host '[vertex] Example: $env:VTO_CA_BUNDLE=C:\path\to\zscaler-ca.pem'
 }
 
 # ── Service account ───────────────────────────────────────────────────────────
@@ -52,9 +53,9 @@ if ($env:GOOGLE_APPLICATION_CREDENTIALS) {
         Write-Host "[error] GOOGLE_APPLICATION_CREDENTIALS points to missing file: $env:GOOGLE_APPLICATION_CREDENTIALS"
         exit 1
     }
-    Write-Host "[vertex] Using service account: $env:GOOGLE_APPLICATION_CREDENTIALS"
+    Write-Host ("[vertex] Using service account: {0}" -f $env:GOOGLE_APPLICATION_CREDENTIALS)
 } else {
-    Write-Host "[vertex] No GOOGLE_APPLICATION_CREDENTIALS — relying on ambient ADC (gcloud auth application-default login)."
+    Write-Host "[vertex] No GOOGLE_APPLICATION_CREDENTIALS set; relying on ambient ADC (gcloud auth application-default login)."
 }
 
 & $BaseRunner

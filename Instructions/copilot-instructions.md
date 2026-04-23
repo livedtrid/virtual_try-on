@@ -5,8 +5,8 @@ This repository is a Proof of Concept for a Virtual Try-On (VTO) experience.
 ## Non-negotiable architecture rules
 
 - The frontend is a static React + Vite app.
-- The frontend must be deployable to GitHub Pages.
-- GitHub Pages is static only. Never place backend logic in the frontend.
+- The frontend must stay deployable to a static host such as Azure Static Web Apps.
+- Static hosting means backend logic must never move into the frontend.
 - Never call Google Vertex AI directly from the browser with credentials.
 - All Google Cloud / Vertex AI logic must live in the backend.
 - The backend is Python + FastAPI.
@@ -44,7 +44,7 @@ Always work in this order unless explicitly told otherwise:
 4. frontend upload flow
 5. frontend-to-backend integration
 6. real Vertex AI integration
-7. GitHub Pages deployment
+7. static hosting deployment
 
 ## Code style
 

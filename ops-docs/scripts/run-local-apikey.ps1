@@ -2,7 +2,7 @@
 # Starts the Virtual Try-On stack in Vertex AI mode using a plain API key.
 #
 # Usage:
-#   $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1
+#   $env:VERTEX_API_KEY="AIza..."; .\ops-docs\scripts\run-local-apikey.ps1
 #
 # Optional:
 #   $env:VTO_CA_BUNDLE="C:\path\to\zscaler-ca.pem"
@@ -20,7 +20,7 @@ if (-not (Test-Path $BaseRunner)) {
 # -- Validate required env vars ------------------------------------------------
 if (-not $env:VERTEX_API_KEY) {
     Write-Host "[error] VERTEX_API_KEY is required."
-    Write-Host '[hint]  Example: $env:VERTEX_API_KEY="AIza..."; .\run-local-apikey.ps1'
+    Write-Host '[hint]  Example: $env:VERTEX_API_KEY="AIza..."; .\ops-docs\scripts\run-local-apikey.ps1'
     exit 1
 }
 
